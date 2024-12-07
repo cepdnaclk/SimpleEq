@@ -108,13 +108,26 @@ void SimpleEqAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
     updatePeakFilter(chainSettings);
 
 	//get filter coeffiecnts for low cut
-    auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, sampleRate, 2 * (chainSettings.lowCutSlope + 1));
+    auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, sampleRate, 2 * (chainSettings.lowCutSlope + 1));
 
+    // get left and right low cut filter chains
 	auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
-	updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
-  
     auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-	updateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutSlope);
+
+	//updating low cut filter chains with coeffiecnts
+	updateCutFilter(leftLowCut, lowCutCoefficients, chainSettings.lowCutSlope); 
+	updateCutFilter(rightLowCut, lowCutCoefficients, chainSettings.lowCutSlope);
+
+	//get filter coeffiecnts for high cut
+	auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq, sampleRate, 2 * (chainSettings.highCutSlope + 1));
+
+	// get left and right high cut filter chains
+	auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
+	auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
+
+	//updating high cut filter chains with coeffiecnts
+	updateCutFilter(leftHighCut, highCutCoefficients, chainSettings.highCutSlope);
+	updateCutFilter(rightHighCut, highCutCoefficients, chainSettings.highCutSlope);
 
 }
 
@@ -165,19 +178,38 @@ void SimpleEqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-	//update peak filter coeffients accordign to the chain settings
+	//getting chain settings from GUI
     auto chainSettings = getChainSettings(apvts);
+
+	//update peak filter
     updatePeakFilter(chainSettings);
 
+	// ======================= low cut filter ==============================
+ 
     //get filter coeffiecnts for low cut
-    auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, getSampleRate(), 2 * (chainSettings.lowCutSlope + 1));
+    auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, getSampleRate(), 2 * (chainSettings.lowCutSlope + 1));
 
+	// get left and right low cut filter chains
     auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
-	updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
-
     auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-	updateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutSlope);
 
+	//updating low cut filter chains with coeffiecnts
+	updateCutFilter(leftLowCut, lowCutCoefficients, chainSettings.lowCutSlope); 
+	updateCutFilter(rightLowCut, lowCutCoefficients, chainSettings.lowCutSlope);
+
+
+	// ======================== high cut filter ==========================
+  
+    //get filter coeffiecnts for high cut
+    auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(chainSettings.highCutFreq,getSampleRate(), 2 * (chainSettings.highCutSlope + 1));
+
+    // get left and right high cut filter chains
+    auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
+    auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
+
+    //updating high cut filter chains with coeffiecnts
+    updateCutFilter(leftHighCut, highCutCoefficients, chainSettings.highCutSlope);
+    updateCutFilter(rightHighCut, highCutCoefficients, chainSettings.highCutSlope);
   
 
     //Processing Audio
@@ -271,8 +303,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout
 		stringArray.add(str);
 	}
 
+    layout.add(std::make_unique<juce::AudioParameterChoice>("LowCut Slope", "LowCut Slope", stringArray, 0));
     layout.add(std::make_unique<juce::AudioParameterChoice>("HighCut Slope", "HighCut Slope", stringArray, 0));
-	layout.add(std::make_unique<juce::AudioParameterChoice>("LowCut Slope", "LowCut Slope", stringArray, 0));
+	
 	
 
 
