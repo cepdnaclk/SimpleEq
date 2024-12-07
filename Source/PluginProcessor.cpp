@@ -249,7 +249,7 @@ void SimpleEqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
 
     auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
 
-	updateCutFilter(leftLowCut, cutCoefficients, chainSettings);
+	updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
 
 
     ////bypassing all links in the  low cut chain.
@@ -292,7 +292,7 @@ void SimpleEqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     //}
 
     auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-	updateCutFilter(rightLowCut, cutCoefficients, chainSettings);
+	updateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutSlope);
 
     //bypassing all links in the  low cut chain.
    /* rightLowCut.setBypassed<0>(true);

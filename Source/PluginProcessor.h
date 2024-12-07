@@ -23,7 +23,7 @@ struct ChainSettings
 	float peakFreq{ 0 }, peakGainInDecibels{ 0 }, peakQuality{ 1.f };
 	float lowCutFreq{ 0 }, highCutFreq{ 0 };
 
-    int lowCutSlope{ Slope::slope_12 }, highCutSlope{ Slope::slope_12 }; 
+    Slope lowCutSlope{ Slope::slope_12 }, highCutSlope{ Slope::slope_12 }; 
 };
 
 ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts);    
@@ -93,7 +93,9 @@ private:
 	static void updateCoefficients(Coefficients& old, const Coefficients& replacements);   
 
     template <typename ChainType, typename CoefficientType>
-    void updateCutFilter(ChainType& leftLowCut, const CoefficientType& cutCoefficients, ChainSettings chainSettings)
+    void updateCutFilter(ChainType& leftLowCut, const CoefficientType& cutCoefficients, 
+     //   ChainSettings chainSettings
+     const Slope& lowCutSlope)
     {
         //get filter coeffiecnts for low cut
         /*auto cutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, getSampleRate(), 2 * (chainSettings.lowCutSlope + 1));
@@ -106,19 +108,19 @@ private:
         leftLowCut.template setBypassed<2>(true);
         leftLowCut.template setBypassed<3>(true);
 
-        switch (chainSettings.lowCutSlope)
+        switch (lowCutSlope)
         {
-        case Slope::slope_12:
+        case slope_12:
             *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
             leftLowCut.template setBypassed<0>(false);
             break;
-        case Slope::slope_24:
+        case slope_24:
             *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
             *leftLowCut.template get<1>().coefficients = *cutCoefficients[1];
             leftLowCut.template setBypassed<0>(false);
             leftLowCut.template setBypassed<1>(false);
             break;
-        case Slope::slope_36:
+        case slope_36:
             *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
             *leftLowCut.template get<1>().coefficients = *cutCoefficients[1];
             *leftLowCut.template get<2>().coefficients = *cutCoefficients[2];
@@ -126,7 +128,7 @@ private:
             leftLowCut.template setBypassed<1>(false);
             leftLowCut.template setBypassed<2>(false);
             break;
-        case Slope::slope_48:
+        case slope_48:
             *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
             *leftLowCut.template get<1>().coefficients = *cutCoefficients[1];
             *leftLowCut.template get<2>().coefficients = *cutCoefficients[2];
