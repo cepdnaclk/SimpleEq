@@ -20,8 +20,13 @@ enum Slope
 
 struct ChainSettings 
 {
-	float peakFreq{ 0 }, peakGainInDecibels{ 0 }, peakQuality{ 1.f };
+	
 	float lowCutFreq{ 0 }, highCutFreq{ 0 };
+    float peakFreq1{ 0 }, peakGainInDecibels1{ 0 }, peakQuality1{ 1.f };
+    float peakFreq2{ 0 }, peakGainInDecibels2{ 0 }, peakQuality2{ 1.f };
+    float peakFreq3{ 0 }, peakGainInDecibels3{ 0 }, peakQuality3{ 1.f };
+    float peakFreq4{ 0 }, peakGainInDecibels4{ 0 }, peakQuality4{ 1.f };
+
 
     Slope lowCutSlope{ Slope::slope_12 }, highCutSlope{ Slope::slope_12 }; 
 };
@@ -77,13 +82,16 @@ private:
 
 	using Filter = juce::dsp::IIR::Filter<float>;
 	using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
-	using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
+	using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, Filter,Filter,Filter, CutFilter>;
 	MonoChain leftChain, rightChain;
 
 	enum ChainPositions
 	{
 		LowCut,
-		Peak,
+		Peak1,
+        Peak2,
+        Peak3,
+        Peak4,
 		HighCut
 	};
 
@@ -110,6 +118,7 @@ private:
         cutChain.template setBypassed<3>(true);
 
         switch (cutSlope)
+
         {
         case slope_48:
 			updateCutFilterLinks<3>(cutChain, cutCoefficients);

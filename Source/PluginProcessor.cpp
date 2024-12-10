@@ -202,11 +202,26 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
 
     settings.lowCutFreq = apvts.getRawParameterValue("LowCut Freq")->load();
     settings.lowCutSlope = static_cast<Slope>(apvts.getRawParameterValue("LowCut Slope")->load());
+
     settings.highCutFreq = apvts.getRawParameterValue("HighCut Freq")->load();
     settings.highCutSlope = static_cast<Slope>(apvts.getRawParameterValue("HighCut Slope")->load());
-    settings.peakFreq = apvts.getRawParameterValue("Peak Freq")->load();
-    settings.peakGainInDecibels = apvts.getRawParameterValue("Peak Gain")->load();
-    settings.peakQuality = apvts.getRawParameterValue("Peak Quality")->load();
+
+    settings.peakFreq1 = apvts.getRawParameterValue("Peak1 Freq")->load();
+    settings.peakGainInDecibels1 = apvts.getRawParameterValue("Peak1 Gain")->load();
+    settings.peakQuality1 = apvts.getRawParameterValue("Peak1 Quality")->load();
+
+    settings.peakFreq2 = apvts.getRawParameterValue("Peak2 Freq")->load();
+    settings.peakGainInDecibels2 = apvts.getRawParameterValue("Peak2 Gain")->load();
+    settings.peakQuality2 = apvts.getRawParameterValue("Peak2 Quality")->load();
+
+    settings.peakFreq3 = apvts.getRawParameterValue("Peak3 Freq")->load();
+    settings.peakGainInDecibels3 = apvts.getRawParameterValue("Peak3 Gain")->load();
+    settings.peakQuality3 = apvts.getRawParameterValue("Peak3 Quality")->load();
+    
+    settings.peakFreq4 = apvts.getRawParameterValue("Peak4 Freq")->load();
+    settings.peakGainInDecibels4 = apvts.getRawParameterValue("Peak4 Gain")->load();
+    settings.peakQuality4 = apvts.getRawParameterValue("Peak4 Quality")->load();
+
 
     return settings;
 
@@ -219,14 +234,30 @@ void SimpleEqAudioProcessor::updateCoefficients(Coefficients& old, const Coeffic
 
 void SimpleEqAudioProcessor::updatePeakFilter(const ChainSettings& chainSettings)
 {
-    //get filter coeffiecnts
-    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq, chainSettings.peakQuality, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels));
+    //get filter coeffiecnts peak filter 1
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq1, chainSettings.peakQuality1, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels1));
+    auto peakCoefficients2 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq2, chainSettings.peakQuality2, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels2));
+    auto peakCoefficients3 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq3, chainSettings.peakQuality3, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels3));
+    auto peakCoefficients4 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq4, chainSettings.peakQuality4, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels4));
+
 
     //set filter coefficients for peak fileters
     //*leftChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
     //*rightChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
-	updateCoefficients(leftChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
-	updateCoefficients(rightChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
+	updateCoefficients(leftChain.get<ChainPositions::Peak1>().coefficients, peakCoefficients);
+	updateCoefficients(rightChain.get<ChainPositions::Peak1>().coefficients, peakCoefficients);
+
+    updateCoefficients(leftChain.get<ChainPositions::Peak2>().coefficients, peakCoefficients2);
+    updateCoefficients(rightChain.get<ChainPositions::Peak2>().coefficients, peakCoefficients2);
+
+    updateCoefficients(leftChain.get<ChainPositions::Peak3>().coefficients, peakCoefficients3);
+    updateCoefficients(rightChain.get<ChainPositions::Peak3>().coefficients, peakCoefficients3);
+
+    updateCoefficients(leftChain.get<ChainPositions::Peak4>().coefficients, peakCoefficients4);
+    updateCoefficients(rightChain.get<ChainPositions::Peak4>().coefficients, peakCoefficients4);
+
+
+
 };
 
 void SimpleEqAudioProcessor::updateLowCutFilters(const ChainSettings& chainSettings)
@@ -267,33 +298,47 @@ void SimpleEqAudioProcessor::updateFilters()
 };
 
 juce::AudioProcessorValueTreeState::ParameterLayout
-     SimpleEqAudioProcessor::createParameterLayout()
+SimpleEqAudioProcessor::createParameterLayout()
 {
-	juce::AudioProcessorValueTreeState::ParameterLayout layout;
-	layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut Freq", "LowCut Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 20.f));	
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut Freq", "LowCut Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 20.f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("HighCut Freq", "HighCut Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 20000.f));
-	layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Freq", "Peak Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 750.f));
-	layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Gain", "Peak Gain", juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f), 0.f));
-	layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Quality", "Peak Quality", juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f), 1.f));
-    
-	juce::StringArray stringArray;
-	for (int i = 0; i < 4; i++)
-	{
-		juce::String str;
-		str << (12 + i * 12);
-		str << " db/Oct";
-		stringArray.add(str);
-	}
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak1 Freq", "Band 1 Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 750.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak1 Gain", "Band 1 Gain", juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f), 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak1 Quality", "Band 1 Quality", juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f), 1.f));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak2 Freq", "Band 2 Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 750.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak2 Gain", "Band 2 Gain", juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f), 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak2 Quality", "Band 2 Quality", juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f), 1.f));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak3 Freq", "Band 3 Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 750.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak3 Gain", "Band 3 Gain", juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f), 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak3 Quality", "Band 3 Quality", juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f), 1.f));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak4 Freq", "Band 4 Freq", juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f), 750.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak4 Gain", "Band 4 Gain", juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f), 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak4 Quality","Band 4 Quality", juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f), 1.f));
+
+
+    juce::StringArray stringArray;
+    for (int i = 0; i < 4; i++)
+    {
+        juce::String str;
+        str << (12 + i * 12);
+        str << " db/Oct";
+        stringArray.add(str);
+    }
 
     layout.add(std::make_unique<juce::AudioParameterChoice>("LowCut Slope", "LowCut Slope", stringArray, 0));
     layout.add(std::make_unique<juce::AudioParameterChoice>("HighCut Slope", "HighCut Slope", stringArray, 0));
-	
-	
 
 
 
-	return layout;
-}   
+
+
+    return layout;
+};
 
 //==============================================================================
 // This creates new instances of the plugin..
