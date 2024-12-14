@@ -47,6 +47,17 @@ private:
 		band4FreqSlider, band4GainSlider, band4QualitySlider,
 		lowCutSlopeSlider, highCutSlopeSlider;
 
+	using APVTS = juce::AudioProcessorValueTreeState;
+	using RotarySliderAttachment = APVTS::SliderAttachment;
+
+    RotarySliderAttachment lowCutFreqSliderAttachment,
+        highCutFreqSliderAttachment,
+        band1FreqSliderAttachment, band1GainSliderAttachment, band1QualitySliderAttachment,
+        band2FreqSliderAttachment, band2GainSliderAttachment, band2QualitySliderAttachment,
+        band3FreqSliderAttachment, band3GainSliderAttachment, band3QualitySliderAttachment,
+        band4FreqSliderAttachment, band4GainSliderAttachment, band4QualitySliderAttachment,
+		lowCutSlopeSliderAttachment, highCutSlopeSliderAttachment;
+
 	std::vector<juce::Component*> getComps();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEqAudioProcessorEditor)
