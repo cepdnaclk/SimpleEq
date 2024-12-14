@@ -45,16 +45,17 @@ void SimpleEqAudioProcessorEditor::resized()
     // subcomponents in your editor..
 
 	auto bounds = getLocalBounds();
-	auto responseArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+	auto responseArea = bounds.removeFromTop(bounds.getHeight() * (1.0/3.0));
 
-	auto lowCutArea = bounds.removeFromLeft(bounds.getWidth() * 0.1666);
+	auto lowCutArea = bounds.removeFromLeft(bounds.getWidth() * (1.0/6.0));
 	auto band1Area = bounds.removeFromLeft(bounds.getWidth() * (1.0/5.0));
 	auto band2Area = bounds.removeFromLeft(bounds.getWidth() * (1.0 / 4.0));
 	auto band3Area = bounds.removeFromLeft(bounds.getWidth() * (1.0/3.0));
 	auto band4Area = bounds.removeFromLeft(bounds.getWidth() * (1.0 / 2.0));
 	auto highCutArea = bounds;
 
-	lowCutFreqSlider.setBounds(lowCutArea);
+	lowCutFreqSlider.setBounds(lowCutArea.removeFromTop(lowCutArea.getHeight()*0.5));
+	lowCutSlopeSlider.setBounds(lowCutArea);
 
 	band1FreqSlider.setBounds(band1Area.removeFromTop(band1Area.getHeight() * 0.33));
 	band1GainSlider.setBounds(band1Area.removeFromTop(band1Area.getHeight() * 0.5));
@@ -72,8 +73,9 @@ void SimpleEqAudioProcessorEditor::resized()
 	band4GainSlider.setBounds(band4Area.removeFromTop(band4Area.getHeight() * 0.5));
 	band4QualitySlider.setBounds(band4Area);
 
-	highCutFreqSlider.setBounds(highCutArea);
-
+	highCutFreqSlider.setBounds(highCutArea.removeFromTop(highCutArea.getHeight() *0.5));
+	highCutSlopeSlider.setBounds(highCutArea);
+	
 }
 
 std::vector<juce::Component*> SimpleEqAudioProcessorEditor::getComps()
@@ -85,7 +87,8 @@ std::vector<juce::Component*> SimpleEqAudioProcessorEditor::getComps()
 		&band1FreqSlider, &band1GainSlider, &band1QualitySlider,
 		&band2FreqSlider, &band2GainSlider, &band2QualitySlider,
 		&band3FreqSlider, &band3GainSlider, &band3QualitySlider,
-		&band4FreqSlider, &band4GainSlider, &band4QualitySlider
+		&band4FreqSlider, &band4GainSlider, &band4QualitySlider,
+		&lowCutSlopeSlider,&highCutSlopeSlider
 
 	};
 }

@@ -44,7 +44,8 @@ private:
         band1FreqSlider, band1GainSlider, band1QualitySlider,
         band2FreqSlider, band2GainSlider, band2QualitySlider,
         band3FreqSlider, band3GainSlider, band3QualitySlider,
-		band4FreqSlider, band4GainSlider, band4QualitySlider;
+		band4FreqSlider, band4GainSlider, band4QualitySlider,
+		lowCutSlopeSlider, highCutSlopeSlider;
 
 	std::vector<juce::Component*> getComps();
 
