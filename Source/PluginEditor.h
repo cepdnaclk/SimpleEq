@@ -18,7 +18,7 @@
 struct CustomRotarySlider : juce::Slider
 {
 	CustomRotarySlider() : juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
-		juce::Slider::TextEntryBoxPosition::NoTextBox)
+		juce::Slider::TextEntryBoxPosition::TextBoxBelow)
 	{
         setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::aliceblue);
 	}
@@ -39,7 +39,7 @@ private:
     // access the processor object that created it.
     SimpleEqAudioProcessor& audioProcessor;
 
-    CustomRotarySlider lowCutFreqSlider,
+    /*CustomRotarySlider lowCutFreqSlider,
         highCutFreqSlider,
         band1FreqSlider, band1GainSlider, band1QualitySlider,
         band2FreqSlider, band2GainSlider, band2QualitySlider,
@@ -56,9 +56,26 @@ private:
         band2FreqSliderAttachment, band2GainSliderAttachment, band2QualitySliderAttachment,
         band3FreqSliderAttachment, band3GainSliderAttachment, band3QualitySliderAttachment,
         band4FreqSliderAttachment, band4GainSliderAttachment, band4QualitySliderAttachment,
-		lowCutSlopeSliderAttachment, highCutSlopeSliderAttachment;
+		lowCutSlopeSliderAttachment, highCutSlopeSliderAttachment;*/
 
-	std::vector<juce::Component*> getComps();
+    // GUI Components
+    // Spectrum Analyzer placeholder
+    juce::Component spectrumAnalyzerPlaceholder;
+	
+    juce::TextButton bandButtons[6];  // Buttons for each band (1-6)
+    juce::Slider freqSlider;         // Frequency slider (used for all bands)
+    juce::Slider slopeSlider;        // Slope slider (for low/high cut)
+    juce::Slider gainSlider;         // Gain slider (for bands 2-5)
+    juce::Slider qSlider;            // Q-factor slider (for bands 2-5)
+
+    int activeBand = -1;  // Tracks which band is currently active
+    
+    // Helper functions
+    void initializeSlider(juce::Slider& slider, const juce::String& name,
+        juce::Slider::SliderStyle style = juce::Slider::RotaryHorizontalVerticalDrag);
+	void updateSlidersForBand(int bandIndex);  // Updates visible sliders based on avtive band
+
+	//std::vector<juce::Component*> getComps();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEqAudioProcessorEditor)
 };
