@@ -11,8 +11,8 @@
 
 //==============================================================================
 SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcessor& p)
-	: AudioProcessorEditor(&p), audioProcessor(p)
-	/*lowCutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowCutFreqSlider),
+	: AudioProcessorEditor(&p), audioProcessor(p),
+	lowCutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowCutFreqSlider),
 	lowCutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowCutSlopeSlider),
 	highCutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq", highCutFreqSlider),
 	highCutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highCutSlopeSlider),
@@ -27,15 +27,12 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 	band3QualitySliderAttachment(audioProcessor.apvts, "Peak3 Quality", band3QualitySlider),
 	band4FreqSliderAttachment(audioProcessor.apvts, "Peak4 Freq", band4FreqSlider),
 	band4GainSliderAttachment(audioProcessor.apvts, "Peak4 Gain", band4GainSlider),
-	band4QualitySliderAttachment(audioProcessor.apvts, "Peak4 Quality", band4QualitySlider)*/
+	band4QualitySliderAttachment(audioProcessor.apvts, "Peak4 Quality", band4QualitySlider)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
 
-	//for (auto* comp : getComps())
-	//{
-	//	addAndMakeVisible(comp);
-	//}
+
 
  //   setSize (1000, 600);
 	
@@ -60,10 +57,15 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 	}
 	
 	// Initialize sliders
-	initializeSlider(freqSlider, "Frequency");
-	initializeSlider(slopeSlider, "Slope");
-	initializeSlider(gainSlider, "Gain");
-	initializeSlider(qSlider, "Q");
+	//initializeSlider(freqSlider, "Frequency");
+	//initializeSlider(slopeSlider, "Slope");
+	//initializeSlider(gainSlider, "Gain");
+	//initializeSlider(qSlider, "Q");
+
+	for (auto* comp : getSliders())
+	{
+		initializeSlider(*comp);
+	}
 
 	// Set the size of the editor
 	setSize(800, 600);
@@ -183,25 +185,65 @@ void SimpleEqAudioProcessorEditor::resized()
 
 	int sliderY = startY + buttonHeight + 50;
 
+	int totalsliderwidth = (sliderWidth * 2) + sliderSpacing;
+	DBG("width" << bounds.getWidth());
+	int sliderstartx = ((bounds.getWidth() / 2) - (totalsliderwidth / 2));
+
 	// log activeband to console	
 	
 	
 	// Centering low cut or high cut sliders blocks if low cut or high cut is selected
-	if ( activeBand == 0 || activeBand == 5) {
-		int totalsliderwidth = (sliderWidth * 2) + sliderSpacing;
-		DBG("width" << bounds.getWidth());
-		int sliderstartx = ((bounds.getWidth()/2) - (totalsliderwidth/2));
-		freqSlider.setBounds(sliderstartx, sliderY, sliderWidth, sliderHeight);
-		slopeSlider.setBounds(sliderstartx + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
-		
-	}
-	else {
-		freqSlider.setBounds((bounds.getWidth() - sliderWidth) / 2, sliderY, sliderWidth, sliderHeight);
-		slopeSlider.setBounds(freqSlider.getX() + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
-		gainSlider.setBounds((bounds.getWidth() - sliderWidth) / 2 - sliderWidth - sliderSpacing, sliderY, sliderWidth, sliderHeight);
-		qSlider.setBounds((bounds.getWidth() - sliderWidth) / 2 + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
-	}
+	//if ( activeBand == 0 || activeBand == 5) {
+	//	int totalsliderwidth = (sliderWidth * 2) + sliderSpacing;
+	//	DBG("width" << bounds.getWidth());
+	//	int sliderstartx = ((bounds.getWidth()/2) - (totalsliderwidth/2));
+	//	freqSlider.setBounds(sliderstartx, sliderY, sliderWidth, sliderHeight);
+	//	slopeSlider.setBounds(sliderstartx + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
+	//	
+	//}
+	//else {
+	//	freqSlider.setBounds((bounds.getWidth() - sliderWidth) / 2, sliderY, sliderWidth, sliderHeight);
+	//	slopeSlider.setBounds(freqSlider.getX() + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
+	//	gainSlider.setBounds((bounds.getWidth() - sliderWidth) / 2 - sliderWidth - sliderSpacing, sliderY, sliderWidth, sliderHeight);
+	//	qSlider.setBounds((bounds.getWidth() - sliderWidth) / 2 + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
+	//}
 	
+	switch (activeBand) {
+	case 0:
+
+		lowCutFreqSlider.setBounds(sliderstartx, sliderY, sliderWidth, sliderHeight);
+		lowCutSlopeSlider.setBounds(sliderstartx + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		break;
+	case 1:
+		band1FreqSlider.setBounds((bounds.getWidth() - sliderWidth) / 2, sliderY, sliderWidth, sliderHeight);
+		band1GainSlider.setBounds((bounds.getWidth() - sliderWidth) / 2 - sliderWidth - sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		band1QualitySlider.setBounds((bounds.getWidth() - sliderWidth) / 2 + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		break;
+	case 2:
+		band2FreqSlider.setBounds((bounds.getWidth() - sliderWidth) / 2, sliderY, sliderWidth, sliderHeight);
+		band2GainSlider.setBounds((bounds.getWidth() - sliderWidth) / 2 - sliderWidth - sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		band2QualitySlider.setBounds((bounds.getWidth() - sliderWidth) / 2 + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		break;
+	case 3:
+		band3FreqSlider.setBounds((bounds.getWidth() - sliderWidth) / 2, sliderY, sliderWidth, sliderHeight);
+		band3GainSlider.setBounds((bounds.getWidth() - sliderWidth) / 2 - sliderWidth - sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		band3QualitySlider.setBounds((bounds.getWidth() - sliderWidth) / 2 + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		break;
+	case 4:
+		band4FreqSlider.setBounds((bounds.getWidth() - sliderWidth) / 2, sliderY, sliderWidth, sliderHeight);
+		band4GainSlider.setBounds((bounds.getWidth() - sliderWidth) / 2 - sliderWidth - sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		band4QualitySlider.setBounds((bounds.getWidth() - sliderWidth) / 2 + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		break;
+	case 5:
+		highCutFreqSlider.setBounds(sliderstartx, sliderY, sliderWidth, sliderHeight);
+		highCutSlopeSlider.setBounds(sliderstartx + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		break;
+	default:
+		band1FreqSlider.setBounds((bounds.getWidth() - sliderWidth) / 2, sliderY, sliderWidth, sliderHeight);
+		band1GainSlider.setBounds((bounds.getWidth() - sliderWidth) / 2 - sliderWidth - sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		band1QualitySlider.setBounds((bounds.getWidth() - sliderWidth) / 2 + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
+		break;
+	}
 
 
 
@@ -209,11 +251,11 @@ void SimpleEqAudioProcessorEditor::resized()
 	
 }
 
-void SimpleEqAudioProcessorEditor::initializeSlider(juce::Slider& slider, const juce::String& name, juce::Slider::SliderStyle style)
+void SimpleEqAudioProcessorEditor::initializeSlider(juce::Slider& slider)
 {
-	slider.setSliderStyle(style);
-	slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
-	slider.setName(name);
+	//slider.setSliderStyle(style);
+	//slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
+	//slider.setName(name);
 	slider.setVisible(false);  // Start with sliders hidden
 	addAndMakeVisible(slider);
 }
@@ -223,16 +265,21 @@ void SimpleEqAudioProcessorEditor::initializeSlider(juce::Slider& slider, const 
 void SimpleEqAudioProcessorEditor::updateSlidersForBand(int bandIndex)
 {
 	// Hide all sliders initially
-	freqSlider.setVisible(false);
-	slopeSlider.setVisible(false);
-	gainSlider.setVisible(false);
-	qSlider.setVisible(false);
+	//freqSlider.setVisible(false);
+	//slopeSlider.setVisible(false);
+	//gainSlider.setVisible(false);
+	//qSlider.setVisible(false);
+
+	for (auto* comp : getSliders())
+	{
+		comp->setVisible(false);
+	}
 
 	// Update slider visibility based on the active band
-	if (bandIndex == 0 || bandIndex == 5) // Bands 1 and 6 (Low/High Cut)
+	//if (bandIndex == 0 || bandIndex == 5) // Bands 1 and 6 (Low/High Cut)
 	{
-		freqSlider.setVisible(true);
-		slopeSlider.setVisible(true);
+		/*freqSlider.setVisible(true);
+		slopeSlider.setVisible(true);*/
 
 		//auto bounds = getLocalBounds();
 		//int sliderWidth = freqSlider.getWidth();
@@ -248,28 +295,63 @@ void SimpleEqAudioProcessorEditor::updateSlidersForBand(int bandIndex)
 		//slopeSlider.setBounds(sliderStartX + sliderWidth + sliderSpacing, sliderY, sliderWidth, sliderHeight);
 		
 	}
-	else if (bandIndex > 0 && bandIndex < 5) // Bands 2-5 (Parametric EQ)
+	//else if (bandIndex > 0 && bandIndex < 5) // Bands 2-5 (Parametric EQ)
 	{
-		freqSlider.setVisible(true);
+	/*	freqSlider.setVisible(true);
 		gainSlider.setVisible(true);
-		qSlider.setVisible(true);
+		qSlider.setVisible(true);*/
 	}
+
+	switch (bandIndex) {
+	case 0:
+		lowCutFreqSlider.setVisible(true);
+		lowCutSlopeSlider.setVisible(true);
+		break;
+	case 1:
+		band1FreqSlider.setVisible(true);
+		band1GainSlider.setVisible(true);
+		band1QualitySlider.setVisible(true);
+		break;
+	case 2:
+		band2FreqSlider.setVisible(true);
+		band2GainSlider.setVisible(true);
+		band2QualitySlider.setVisible(true);
+		break;
+	case 3:
+		band3FreqSlider.setVisible(true);
+		band3GainSlider.setVisible(true);
+		band3QualitySlider.setVisible(true);
+		break;
+	case 4:
+		band4FreqSlider.setVisible(true);
+		band4GainSlider.setVisible(true);
+		band4QualitySlider.setVisible(true);
+		break;
+	case 5:
+		highCutFreqSlider.setVisible(true);
+		highCutSlopeSlider.setVisible(true);
+		break;
+	default:
+		band1FreqSlider.setVisible(true);
+		band1GainSlider.setVisible(true);
+		band1QualitySlider.setVisible(true);
+		break;	
+	}
+	
 
 	// Trigger a layout update
 	resized();
 }
 
-//std::vector<juce::Component*> SimpleEqAudioProcessorEditor::getComps()
-//{
-//    return
-//	{
-//		&lowCutFreqSlider,
-//		&highCutFreqSlider,
-//		&band1FreqSlider, &band1GainSlider, &band1QualitySlider,
-//		&band2FreqSlider, &band2GainSlider, &band2QualitySlider,
-//		&band3FreqSlider, &band3GainSlider, &band3QualitySlider,
-//		&band4FreqSlider, &band4GainSlider, &band4QualitySlider,
-//		&lowCutSlopeSlider,&highCutSlopeSlider
-//
-//	};
-//}
+std::vector<juce::Slider*> SimpleEqAudioProcessorEditor::getSliders()
+{
+    return
+	{
+		&lowCutFreqSlider,&lowCutSlopeSlider,
+		&highCutFreqSlider,&highCutSlopeSlider,
+		&band1FreqSlider, &band1GainSlider, &band1QualitySlider,
+		&band2FreqSlider, &band2GainSlider, &band2QualitySlider,
+		&band3FreqSlider, &band3GainSlider, &band3QualitySlider,
+		&band4FreqSlider, &band4GainSlider, &band4QualitySlider
+	};
+}
