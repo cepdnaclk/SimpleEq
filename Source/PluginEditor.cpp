@@ -32,10 +32,6 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
 
-
-
- //   setSize (1000, 600);
-	
 	
 	// Initialize spectrum analyzer placeholder
 	addAndMakeVisible(spectrumAnalyzerPlaceholder);
@@ -44,12 +40,15 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 	for (int i = 0; i < 6; ++i)
 	{
 		bandButtons[i].setButtonText(juce::String(i + 1));
-		bandButtons[i].setClickingTogglesState(true);
+		bandButtons[i].setClickingTogglesState(false);
+		bandButtons[i].setColour(juce::TextButton::buttonColourId, bandColours[i]);
+		//bandButtons[i].setColour(juce::TextButton::textColourOffId, juce::Colours::black);
 
 		// Use onClick for button handling
 		bandButtons[i].onClick = [this, i]() {
 			activeBand = i;
 			DBG("Active Band: " << (activeBand + 1));
+			//bandButtons[i].setColour(juce::TextButton::buttonColourId, bandColours[i]);
 			updateSlidersForBand(activeBand);
 		};
 
@@ -80,8 +79,11 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
 
 
 
-	// Fill background
-	g.fillAll(juce::Colours::darkgrey);
+	// Fill background 
+	//20,29,36
+	//21,30,37
+	//48,48,48
+	g.fillAll(juce::Colour(20,29,36));
 
 	// Draw plugin title
 	g.setColour(juce::Colours::white);
@@ -107,11 +109,11 @@ void SimpleEqAudioProcessorEditor::resized()
 
 
 	// Dynamic button sizing
-	float buttonWidthRatio = 0.08f; // 8% of the width per button
+	float buttonWidthRatio = 0.06f; // 8% of the width per button
 	float buttonHeightRatio = 0.08f; // 8% of the height
 	int buttonWidth = static_cast<int>(bounds.getWidth() * buttonWidthRatio);
 	int buttonHeight = static_cast<int>(bounds.getHeight() * buttonHeightRatio);
-	int buttonSpacing = static_cast<int>(buttonWidth * 0.2f); // 20% of button width for spacing
+	int buttonSpacing = static_cast<int>(buttonWidth * 0.1f); // 20% of button width for spacing
 
 	// Layout band buttons
 	int totalWidth = (buttonWidth * 6) + (buttonSpacing * 5);

@@ -77,5 +77,10 @@ private:
 
 	std::vector<juce::Slider*> getSliders();
 
+    //53,152,219
+    //39,226,252
+	juce::Array<juce::Colour> bandColours{ juce::Colour(192,102,102), juce::Colour(154,89,181), juce::Colour(27,188,156),
+        juce::Colour(53,152,219), juce::Colour(230,124,37), juce::Colour(196,80,128) };
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEqAudioProcessorEditor)
 };
