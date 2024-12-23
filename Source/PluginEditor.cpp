@@ -34,7 +34,7 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 
 	
 	// Initialize spectrum analyzer placeholder
-	addAndMakeVisible(spectrumAnalyzerPlaceholder);
+	addAndMakeVisible(responseCurvePlaceholder);
 
 	// Initialize band buttons
 	for (int i = 0; i < 6; ++i)
@@ -92,13 +92,13 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
 
 	// Spectrum analyzer placeholder
 	g.setColour(Colours::black);
-	auto spectrumAnalyzerArea = spectrumAnalyzerPlaceholder.getBounds();
-	g.fillRect(spectrumAnalyzerArea);
+	auto responseCurveArea = responseCurvePlaceholder.getBounds();
+	g.fillRect(responseCurveArea);
 	g.setColour(Colours::white);
-	g.drawRect(spectrumAnalyzerArea, 1);
+	g.drawRect(responseCurveArea, 1);
 
 	//drawing response curve
-	auto w = spectrumAnalyzerArea.getWidth();
+	auto w = responseCurveArea.getWidth();
 
 	auto& lowcut = monoChain.get<ChainPositions::LowCut>();
 	auto& peak1 = monoChain.get<ChainPositions::Peak1>();
@@ -164,18 +164,18 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
 
 	Path responseCurve;
 
-	const double outputMin = spectrumAnalyzerArea.getBottom();
-	const double outputMax = spectrumAnalyzerArea.getY();
+	const double outputMin = responseCurveArea.getBottom();
+	const double outputMax = responseCurveArea.getY();
 
 	auto map = [outputMin, outputMax](double input) 
 	{
 		return jmap(input, -24.0, 24.0, outputMin, outputMax);
 	};
 
-	responseCurve.startNewSubPath(spectrumAnalyzerArea.getX(), map(mags.front()));
+	responseCurve.startNewSubPath(responseCurveArea.getX(), map(mags.front()));
 
 	for (size_t i = 1; i < mags.size(); ++i) {
-		responseCurve.lineTo(spectrumAnalyzerArea.getX() + i, map(mags[i]));
+		responseCurve.lineTo(responseCurveArea.getX() + i, map(mags[i]));
 	}
 
 	g.setColour(Colours::skyblue);
@@ -192,7 +192,7 @@ void SimpleEqAudioProcessorEditor::resized()
 
 	// Reserve space for the spectrum analyzer at the top
 	auto spectrumAnalyzerArea = bounds.removeFromTop(bounds.getHeight() / 2);
-	spectrumAnalyzerPlaceholder.setBounds(spectrumAnalyzerArea);
+	responseCurvePlaceholder.setBounds(spectrumAnalyzerArea);
 
 
 	// Dynamic button sizing

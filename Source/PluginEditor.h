@@ -61,7 +61,7 @@ private:
 
     // GUI Components
     // Spectrum Analyzer placeholder
-    juce::Component spectrumAnalyzerPlaceholder;
+    juce::Component responseCurvePlaceholder;
 	
     juce::TextButton bandButtons[6];  // Buttons for each band (1-6)
     //juce::Slider freqSlider;         // Frequency slider (used for all bands)
