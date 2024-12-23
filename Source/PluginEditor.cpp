@@ -78,24 +78,111 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
     //g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
 
-
+	using namespace juce;
 	// Fill background 
 	//20,29,36
 	//21,30,37
 	//48,48,48
-	g.fillAll(juce::Colour(20,29,36));
+	g.fillAll(Colour(20,29,36));
 
 	// Draw plugin title
 	g.setColour(juce::Colours::white);
 	g.setFont(15.0f);
-	g.drawText("EQ", getLocalBounds(), juce::Justification::centredTop);
+	g.drawText("EQ", getLocalBounds(), Justification::centredTop);
 
 	// Spectrum analyzer placeholder
-	g.setColour(juce::Colours::black);
+	g.setColour(Colours::black);
 	auto spectrumAnalyzerArea = spectrumAnalyzerPlaceholder.getBounds();
 	g.fillRect(spectrumAnalyzerArea);
-	g.setColour(juce::Colours::white);
+	g.setColour(Colours::white);
 	g.drawRect(spectrumAnalyzerArea, 1);
+
+	//drawing response curve
+	auto w = spectrumAnalyzerArea.getWidth();
+
+	auto& lowcut = monoChain.get<ChainPositions::LowCut>();
+	auto& peak1 = monoChain.get<ChainPositions::Peak1>();
+	auto& peak2 = monoChain.get<ChainPositions::Peak2>();
+	auto& peak3 = monoChain.get<ChainPositions::Peak3>();
+	auto& peak4 = monoChain.get<ChainPositions::Peak4>();
+	auto& highcut = monoChain.get<ChainPositions::HighCut>();
+
+	auto sampleRate = audioProcessor.getSampleRate();
+
+	std::vector<double> mags;
+	mags.resize(w);
+
+	for (int i = 0; i < w; i++) {
+
+		double mag = 1.f;
+		//mapping pixel value to frequency in hearing range
+		double freq = mapToLog10(double(i) / double(w), 20.0, 20000.0);
+
+		//checking whether the band is bypassed
+		if ( ! monoChain.isBypassed< ChainPositions::Peak1>() ){
+			mag *= peak1.coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+		if (!monoChain.isBypassed<ChainPositions::Peak2>()) {
+			mag *= peak2.coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+		if (!monoChain.isBypassed<ChainPositions::Peak3>()) {
+			mag *= peak3.coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+		if (!monoChain.isBypassed<ChainPositions::Peak4>()) {
+			mag *= peak4.coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+
+		if (!lowcut.isBypassed<0>()) {
+			mag *= lowcut.get<0>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+		if (!lowcut.isBypassed<1>()) {
+			mag *= lowcut.get<1>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+		if (!lowcut.isBypassed<2>()) {
+			mag *= lowcut.get<2>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+		if (!lowcut.isBypassed<3>()) {
+			mag *= lowcut.get<3>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+
+		if (!highcut.isBypassed<0>()) {
+			mag *= highcut.get<0>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+		if (!highcut.isBypassed<1>()) {
+			mag *= highcut.get<1>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+		if (!highcut.isBypassed<2>()) {
+			mag *= highcut.get<2>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+		if (!highcut.isBypassed<3>()) {
+			mag *= highcut.get<3>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
+		}
+
+		mags[i] = Decibels::gainToDecibels(mag);
+	 
+	}
+
+	Path responseCurve;
+
+	const double outputMin = spectrumAnalyzerArea.getBottom();
+	const double outputMax = spectrumAnalyzerArea.getY();
+
+	auto map = [outputMin, outputMax](double input) 
+	{
+		return jmap(input, -24.0, 24.0, outputMin, outputMax);
+	};
+
+	responseCurve.startNewSubPath(spectrumAnalyzerArea.getX(), map(mags.front()));
+
+	for (size_t i = 1; i < mags.size(); ++i) {
+		responseCurve.lineTo(spectrumAnalyzerArea.getX() + i, map(mags[i]));
+	}
+
+	g.setColour(Colours::skyblue);
+	g.strokePath(responseCurve, PathStrokeType(2.0f));
+
+
+
 }
 
 void SimpleEqAudioProcessorEditor::resized()
