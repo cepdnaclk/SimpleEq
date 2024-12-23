@@ -61,6 +61,17 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 		initializeSlider(*comp);
 	}
 
+	//starting timer
+	startTimerHz(60);
+
+	//set up listner
+	const auto& params = audioProcessor.getParameters();
+	for (auto param : params)
+	{
+		param->addListener(this);
+	}
+
+
 	// Set the size of the editor
 	setSize(800, 600);
 
@@ -68,7 +79,11 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 
 SimpleEqAudioProcessorEditor::~SimpleEqAudioProcessorEditor()
 {
-
+	const auto& params = audioProcessor.getParameters();
+	for (auto param : params)
+	{
+		param->removeListener(this);
+	}
 }
 
 //==============================================================================
