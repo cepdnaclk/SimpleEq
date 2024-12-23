@@ -266,6 +266,21 @@ void SimpleEqAudioProcessorEditor::resized()
 	
 }
 
+void SimpleEqAudioProcessorEditor::parameterChanged(const juce::String& parameterID, float newValue)
+{
+	parametersChanged.set(true);
+}
+
+void SimpleEqAudioProcessorEditor::timerCallback()
+{
+	if (parametersChanged.compareAndSetBool(false, true))
+	{
+		// Update the monochain
+		// call a repaint
+		
+	}
+}
+
 void SimpleEqAudioProcessorEditor::initializeSlider(juce::Slider& slider)
 {
 	//slider.setSliderStyle(style);
