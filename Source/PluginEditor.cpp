@@ -286,15 +286,28 @@ void SimpleEqAudioProcessorEditor::parameterValueChanged(int parameterIndex, flo
 	parametersChanged.set(true);
 }
 
+
 void SimpleEqAudioProcessorEditor::timerCallback()
 {
 	if (parametersChanged.compareAndSetBool(false, true))
 	{
 		// Update the monochain
+		//updating peak filters in 4 bands
+		auto chainSettings = getChainSettings(audioProcessor.apvts);
+		auto peakCoefficientsVecotr = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
+
+		updateCoefficients(monoChain.get<ChainPositions::Peak1>().coefficients, peakCoefficientsVecotr[0]);
+		updateCoefficients(monoChain.get<ChainPositions::Peak2>().coefficients, peakCoefficientsVecotr[1]);
+		updateCoefficients(monoChain.get<ChainPositions::Peak3>().coefficients, peakCoefficientsVecotr[2]);
+		updateCoefficients(monoChain.get<ChainPositions::Peak4>().coefficients, peakCoefficientsVecotr[3]);
+
 		// call a repaint
+		repaint();
 		
 	}
 }
+
+
 
 void SimpleEqAudioProcessorEditor::initializeSlider(juce::Slider& slider)
 {
