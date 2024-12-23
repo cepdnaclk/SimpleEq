@@ -281,7 +281,7 @@ void SimpleEqAudioProcessorEditor::resized()
 	
 }
 
-void SimpleEqAudioProcessorEditor::parameterChanged(const juce::String& parameterID, float newValue)
+void SimpleEqAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue)
 {
 	parametersChanged.set(true);
 }
