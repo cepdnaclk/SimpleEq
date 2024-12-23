@@ -26,7 +26,7 @@ struct CustomRotarySlider : juce::Slider
 };
 
 class SimpleEqAudioProcessorEditor  : public juce::AudioProcessorEditor,
-	juce::AudioProcessorValueTreeState::Listener,
+	juce::AudioProcessorParameter::Listener,
 	juce::Timer
 {
 public:
@@ -37,7 +37,8 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-	void parameterChanged(const juce::String& parameterID, float newValue) override;
+    void parameterValueChanged(int parameterIndex, float newValue) override;
+    void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override {}
 	void timerCallback() override;
 
 private:
