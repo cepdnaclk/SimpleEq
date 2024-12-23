@@ -52,6 +52,37 @@ void updateCoefficients(Coefficients& old, const Coefficients& replacements);
 
 std::vector<Coefficients> makePeakFilter(const ChainSettings& chainSettings, double sampleRate);
 
+template <int Index, typename ChainType, typename CoefficientType>
+void updateCutFilterLinks(ChainType& chain, const CoefficientType& coefficients)
+{
+    updateCoefficients(chain.template get<Index>().coefficients, coefficients[Index]);
+    chain.template setBypassed<Index>(false);
+};
+
+template <typename ChainType, typename CoefficientType>
+void updateCutFilter(ChainType& cutChain, const CoefficientType& cutCoefficients, const Slope& cutSlope)
+{
+
+    //bypassing all links in the  low cut chain.
+    cutChain.template setBypassed<0>(true);
+    cutChain.template setBypassed<1>(true);
+    cutChain.template setBypassed<2>(true);
+    cutChain.template setBypassed<3>(true);
+
+    switch (cutSlope)
+
+    {
+    case slope_48:
+        updateCutFilterLinks<3>(cutChain, cutCoefficients);
+    case slope_36:
+        updateCutFilterLinks<2>(cutChain, cutCoefficients);
+    case slope_24:
+        updateCutFilterLinks<1>(cutChain, cutCoefficients);
+    case slope_12:
+        updateCutFilterLinks<0>(cutChain, cutCoefficients);
+
+    }
+};
 
 //==============================================================================
 /**
@@ -115,40 +146,6 @@ private:
 	};*/
 
 	void updatePeakFilter(const ChainSettings& chainSettings);
-
-
-
-    template <int Index,typename ChainType, typename CoefficientType>
-	void updateCutFilterLinks(ChainType& chain, const CoefficientType& coefficients)
-	{
-        updateCoefficients(chain.template get<Index>().coefficients, coefficients[Index]);
-		chain.template setBypassed<Index>(false);
-	};
-
-    template <typename ChainType, typename CoefficientType>
-    void updateCutFilter(ChainType& cutChain, const CoefficientType& cutCoefficients, const Slope& cutSlope)
-    {
-
-        //bypassing all links in the  low cut chain.
-        cutChain.template setBypassed<0>(true);
-        cutChain.template setBypassed<1>(true);
-        cutChain.template setBypassed<2>(true);
-        cutChain.template setBypassed<3>(true);
-
-        switch (cutSlope)
-
-        {
-        case slope_48:
-			updateCutFilterLinks<3>(cutChain, cutCoefficients);
-        case slope_36:
-			updateCutFilterLinks<2>(cutChain, cutCoefficients);
-        case slope_24:
-			updateCutFilterLinks<1>(cutChain, cutCoefficients);
-        case slope_12:
-			updateCutFilterLinks<0>(cutChain, cutCoefficients);
-
-        }
-    };
 
 	void updateFilters();
 	void updateLowCutFilters(const ChainSettings& chainSettings);
