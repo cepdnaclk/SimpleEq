@@ -9,75 +9,17 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//==============================================================================
-SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcessor& p)
-	: AudioProcessorEditor(&p), audioProcessor(p),
-	lowCutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowCutFreqSlider),
-	lowCutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowCutSlopeSlider),
-	highCutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq", highCutFreqSlider),
-	highCutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highCutSlopeSlider),
-	band1FreqSliderAttachment(audioProcessor.apvts, "Peak1 Freq", band1FreqSlider),
-	band1GainSliderAttachment(audioProcessor.apvts, "Peak1 Gain", band1GainSlider),
-	band1QualitySliderAttachment(audioProcessor.apvts, "Peak1 Quality", band1QualitySlider),
-	band2FreqSliderAttachment(audioProcessor.apvts, "Peak2 Freq", band2FreqSlider),
-	band2GainSliderAttachment(audioProcessor.apvts, "Peak2 Gain", band2GainSlider),
-	band2QualitySliderAttachment(audioProcessor.apvts, "Peak2 Quality", band2QualitySlider),
-	band3FreqSliderAttachment(audioProcessor.apvts, "Peak3 Freq", band3FreqSlider),
-	band3GainSliderAttachment(audioProcessor.apvts, "Peak3 Gain", band3GainSlider),
-	band3QualitySliderAttachment(audioProcessor.apvts, "Peak3 Quality", band3QualitySlider),
-	band4FreqSliderAttachment(audioProcessor.apvts, "Peak4 Freq", band4FreqSlider),
-	band4GainSliderAttachment(audioProcessor.apvts, "Peak4 Gain", band4GainSlider),
-	band4QualitySliderAttachment(audioProcessor.apvts, "Peak4 Quality", band4QualitySlider)
+ResponseCurveComponent::ResponseCurveComponent(SimpleEqAudioProcessor& p) : audioProcessor(p)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-
-	
-	// Initialize spectrum analyzer placeholder
-	addAndMakeVisible(responseCurvePlaceholder);
-
-	// Initialize band buttons
-	for (int i = 0; i < 6; ++i)
-	{
-		bandButtons[i].setButtonText(juce::String(i + 1));
-		bandButtons[i].setClickingTogglesState(false);
-		bandButtons[i].setColour(juce::TextButton::buttonColourId, bandColours[i]);
-		//bandButtons[i].setColour(juce::TextButton::textColourOffId, juce::Colours::black);
-
-		// Use onClick for button handling
-		bandButtons[i].onClick = [this, i]() {
-			activeBand = i;
-			DBG("Active Band: " << (activeBand + 1));
-			//bandButtons[i].setColour(juce::TextButton::buttonColourId, bandColours[i]);
-			updateSlidersForBand(activeBand);
-		};
-
-		addAndMakeVisible(bandButtons[i]);
-	}
-	
-
-	for (auto* comp : getSliders())
-	{
-		initializeSlider(*comp);
-	}
-
-	//starting timer
 	startTimerHz(60);
-
-	//set up listner
 	const auto& params = audioProcessor.getParameters();
 	for (auto param : params)
 	{
 		param->addListener(this);
 	}
-
-
-	// Set the size of the editor
-	setSize(800, 600);
-
 }
 
-SimpleEqAudioProcessorEditor::~SimpleEqAudioProcessorEditor()
+ResponseCurveComponent::~ResponseCurveComponent()
 {
 	const auto& params = audioProcessor.getParameters();
 	for (auto param : params)
@@ -86,11 +28,44 @@ SimpleEqAudioProcessorEditor::~SimpleEqAudioProcessorEditor()
 	}
 }
 
-//==============================================================================
-void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
+void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float newValue)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    //g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+	parametersChanged.set(true);
+}
+
+
+void ResponseCurveComponent::timerCallback()
+{
+	if (parametersChanged.compareAndSetBool(false, true))
+	{
+		// Update the monochain
+		//updating peak filters in 4 bands
+		auto chainSettings = getChainSettings(audioProcessor.apvts);
+		auto peakCoefficientsVecotr = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
+
+		updateCoefficients(monoChain.get<ChainPositions::Peak1>().coefficients, peakCoefficientsVecotr[0]);
+		updateCoefficients(monoChain.get<ChainPositions::Peak2>().coefficients, peakCoefficientsVecotr[1]);
+		updateCoefficients(monoChain.get<ChainPositions::Peak3>().coefficients, peakCoefficientsVecotr[2]);
+		updateCoefficients(monoChain.get<ChainPositions::Peak4>().coefficients, peakCoefficientsVecotr[3]);
+
+		//updating low cut filters
+		auto lowCutCoefficients = makeLowCutFilter(chainSettings, audioProcessor.getSampleRate());
+		updateCutFilter(monoChain.get<ChainPositions::LowCut>(), lowCutCoefficients, chainSettings.lowCutSlope);
+
+		//updating high cut filters
+		auto highCutCoefficients = makeHighCutFilter(chainSettings, audioProcessor.getSampleRate());
+		updateCutFilter(monoChain.get<ChainPositions::HighCut>(), highCutCoefficients, chainSettings.highCutSlope);
+
+		// call a repaint
+		repaint();
+
+	}
+}
+
+void ResponseCurveComponent::paint(juce::Graphics& g)
+{
+	// (Our component is opaque, so we must completely fill the background with a solid colour)
+	//g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
 
 	using namespace juce;
@@ -98,7 +73,7 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
 	//20,29,36
 	//21,30,37
 	//48,48,48
-	g.fillAll(Colour(20,29,36));
+	//g.fillAll(Colour(20, 29, 36));
 
 	// Draw plugin title
 	g.setColour(juce::Colours::white);
@@ -106,11 +81,9 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
 	g.drawText("EQ", getLocalBounds(), Justification::centredTop);
 
 	// Spectrum analyzer placeholder
-	g.setColour(Colours::black);
-	auto responseCurveArea = responseCurvePlaceholder.getBounds();
-	g.fillRect(responseCurveArea);
-	g.setColour(Colours::white);
-	g.drawRect(responseCurveArea, 1);
+	
+	auto responseCurveArea = getLocalBounds();
+
 
 	//drawing response curve
 	auto w = responseCurveArea.getWidth();
@@ -134,7 +107,7 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
 		double freq = mapToLog10(double(i) / double(w), 20.0, 20000.0);
 
 		//checking whether the band is bypassed
-		if ( ! monoChain.isBypassed< ChainPositions::Peak1>() ){
+		if (!monoChain.isBypassed< ChainPositions::Peak1>()) {
 			mag *= peak1.coefficients->getMagnitudeForFrequency(freq, sampleRate);
 		}
 		if (!monoChain.isBypassed<ChainPositions::Peak2>()) {
@@ -174,7 +147,7 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
 		}
 
 		mags[i] = Decibels::gainToDecibels(mag);
-	 
+
 	}
 
 	Path responseCurve;
@@ -182,16 +155,21 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
 	const double outputMin = responseCurveArea.getBottom();
 	const double outputMax = responseCurveArea.getY();
 
-	auto map = [outputMin, outputMax](double input) 
-	{
-		return jmap(input, -24.0, 24.0, outputMin, outputMax);
-	};
+	auto map = [outputMin, outputMax](double input)
+		{
+			return jmap(input, -24.0, 24.0, outputMin, outputMax);
+		};
 
 	responseCurve.startNewSubPath(responseCurveArea.getX(), map(mags.front()));
 
 	for (size_t i = 1; i < mags.size(); ++i) {
 		responseCurve.lineTo(responseCurveArea.getX() + i, map(mags[i]));
 	}
+
+	g.setColour(Colours::black);
+	g.fillRect(responseCurveArea);
+	g.setColour(Colours::white);
+	g.drawRect(responseCurveArea, 1);
 
 	g.setColour(Colours::skyblue);
 	g.strokePath(responseCurve, PathStrokeType(2.0f));
@@ -200,14 +178,105 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
 
 }
 
+//==============================================================================
+SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcessor& p)
+	: AudioProcessorEditor(&p), audioProcessor(p),
+	responseCurveComponent(audioProcessor),
+	lowCutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowCutFreqSlider),
+	lowCutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowCutSlopeSlider),
+	highCutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq", highCutFreqSlider),
+	highCutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highCutSlopeSlider),
+	band1FreqSliderAttachment(audioProcessor.apvts, "Peak1 Freq", band1FreqSlider),
+	band1GainSliderAttachment(audioProcessor.apvts, "Peak1 Gain", band1GainSlider),
+	band1QualitySliderAttachment(audioProcessor.apvts, "Peak1 Quality", band1QualitySlider),
+	band2FreqSliderAttachment(audioProcessor.apvts, "Peak2 Freq", band2FreqSlider),
+	band2GainSliderAttachment(audioProcessor.apvts, "Peak2 Gain", band2GainSlider),
+	band2QualitySliderAttachment(audioProcessor.apvts, "Peak2 Quality", band2QualitySlider),
+	band3FreqSliderAttachment(audioProcessor.apvts, "Peak3 Freq", band3FreqSlider),
+	band3GainSliderAttachment(audioProcessor.apvts, "Peak3 Gain", band3GainSlider),
+	band3QualitySliderAttachment(audioProcessor.apvts, "Peak3 Quality", band3QualitySlider),
+	band4FreqSliderAttachment(audioProcessor.apvts, "Peak4 Freq", band4FreqSlider),
+	band4GainSliderAttachment(audioProcessor.apvts, "Peak4 Gain", band4GainSlider),
+	band4QualitySliderAttachment(audioProcessor.apvts, "Peak4 Quality", band4QualitySlider)
+{
+    // Make sure that before the constructor has finished, you've set the
+    // editor's size to whatever you need it to be.
+
+	
+	// Initialize spectrum analyzer placeholder
+	//addAndMakeVisible(responseCurvePlaceholder);
+
+	// Initialize band buttons
+	for (int i = 0; i < 6; ++i)
+	{
+		bandButtons[i].setButtonText(juce::String(i + 1));
+		bandButtons[i].setClickingTogglesState(false);
+		bandButtons[i].setColour(juce::TextButton::buttonColourId, bandColours[i]);
+		//bandButtons[i].setColour(juce::TextButton::textColourOffId, juce::Colours::black);
+
+		// Use onClick for button handling
+		bandButtons[i].onClick = [this, i]() {
+			activeBand = i;
+			DBG("Active Band: " << (activeBand + 1));
+			//bandButtons[i].setColour(juce::TextButton::buttonColourId, bandColours[i]);
+			updateSlidersForBand(activeBand);
+		};
+
+		addAndMakeVisible(bandButtons[i]);
+	}
+	
+
+	for (auto* comp : getSliders())
+	{
+		initializeSlider(*comp);
+	}
+
+	// Initialize response curve component
+	addAndMakeVisible(responseCurveComponent);
+
+	
+
+	// Set the size of the editor
+	setSize(800, 600);
+
+}
+
+SimpleEqAudioProcessorEditor::~SimpleEqAudioProcessorEditor()
+{
+	
+}
+
+//==============================================================================
+void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
+{
+    // (Our component is opaque, so we must completely fill the background with a solid colour)
+    //g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+
+
+	using namespace juce;
+	// Fill background 
+	//20,29,36
+	//21,30,37
+	//48,48,48
+	g.fillAll(Colour(20,29,36));
+
+	// Draw plugin title
+	g.setColour(juce::Colours::white);
+	g.setFont(15.0f);
+	g.drawText("EQ", getLocalBounds(), Justification::centredTop);
+
+	
+}
+
 void SimpleEqAudioProcessorEditor::resized()
 {
     
 	auto bounds = getLocalBounds();
 
 	// Reserve space for the spectrum analyzer at the top
-	auto spectrumAnalyzerArea = bounds.removeFromTop(bounds.getHeight() / 2);
-	responseCurvePlaceholder.setBounds(spectrumAnalyzerArea);
+	auto responseCurveArea = bounds.removeFromTop(bounds.getHeight() / 2);
+	//responseCurvePlaceholder.setBounds(spectrumAnalyzerArea);
+	responseCurveComponent.setBounds(responseCurveArea);
 
 
 	// Dynamic button sizing
@@ -220,7 +289,7 @@ void SimpleEqAudioProcessorEditor::resized()
 	// Layout band buttons
 	int totalWidth = (buttonWidth * 6) + (buttonSpacing * 5);
 	int startX = (bounds.getWidth() - totalWidth) / 2;
-	int startY = spectrumAnalyzerArea.getBottom() + 10;
+	int startY = responseCurveArea.getBottom() + 10;
 
 
 	for (int i = 0; i < 6; ++i)
@@ -280,42 +349,6 @@ void SimpleEqAudioProcessorEditor::resized()
 
 	
 }
-
-void SimpleEqAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue)
-{
-	parametersChanged.set(true);
-}
-
-
-void SimpleEqAudioProcessorEditor::timerCallback()
-{
-	if (parametersChanged.compareAndSetBool(false, true))
-	{
-		// Update the monochain
-		//updating peak filters in 4 bands
-		auto chainSettings = getChainSettings(audioProcessor.apvts);
-		auto peakCoefficientsVecotr = makePeakFilter(chainSettings, audioProcessor.getSampleRate());
-
-		updateCoefficients(monoChain.get<ChainPositions::Peak1>().coefficients, peakCoefficientsVecotr[0]);
-		updateCoefficients(monoChain.get<ChainPositions::Peak2>().coefficients, peakCoefficientsVecotr[1]);
-		updateCoefficients(monoChain.get<ChainPositions::Peak3>().coefficients, peakCoefficientsVecotr[2]);
-		updateCoefficients(monoChain.get<ChainPositions::Peak4>().coefficients, peakCoefficientsVecotr[3]);
-
-		//updating low cut filters
-		auto lowCutCoefficients = makeLowCutFilter(chainSettings, audioProcessor.getSampleRate());
-		updateCutFilter(monoChain.get<ChainPositions::LowCut>(), lowCutCoefficients, chainSettings.lowCutSlope);
-
-		//updating high cut filters
-		auto highCutCoefficients = makeHighCutFilter(chainSettings, audioProcessor.getSampleRate());
-		updateCutFilter(monoChain.get<ChainPositions::HighCut>(), highCutCoefficients, chainSettings.highCutSlope);
-
-		// call a repaint
-		repaint();
-		
-	}
-}
-
-
 
 void SimpleEqAudioProcessorEditor::initializeSlider(juce::Slider& slider)
 {
@@ -386,5 +419,6 @@ std::vector<juce::Slider*> SimpleEqAudioProcessorEditor::getSliders()
 		&band2FreqSlider, &band2GainSlider, &band2QualitySlider,
 		&band3FreqSlider, &band3GainSlider, &band3QualitySlider,
 		&band4FreqSlider, &band4GainSlider, &band4QualitySlider
+		
 	};
 }
