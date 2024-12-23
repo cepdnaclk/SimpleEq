@@ -236,34 +236,56 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
 
 };
 
-void SimpleEqAudioProcessor::updateCoefficients(Coefficients& old, const Coefficients& replacements)
+void /*SimpleEqAudioProcessor::*/updateCoefficients(Coefficients& old, const Coefficients& replacements)
 {
 	*old = *replacements;
 };
 
+std::vector<Coefficients> makePeakFilter(const ChainSettings& chainSettings, double sampleRate)
+{
+    
+    return
+    {
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            sampleRate, chainSettings.peakFreq1, chainSettings.peakQuality1, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels1)),
+
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            sampleRate, chainSettings.peakFreq2, chainSettings.peakQuality2, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels2)),
+
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            sampleRate, chainSettings.peakFreq3, chainSettings.peakQuality3, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels3)),
+
+        juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+            sampleRate, chainSettings.peakFreq4, chainSettings.peakQuality4, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels4))
+
+    };
+
+}
+
 void SimpleEqAudioProcessor::updatePeakFilter(const ChainSettings& chainSettings)
 {
     //get filter coeffiecnts peak filter 1
-    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq1, chainSettings.peakQuality1, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels1));
-    auto peakCoefficients2 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq2, chainSettings.peakQuality2, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels2));
-    auto peakCoefficients3 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq3, chainSettings.peakQuality3, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels3));
-    auto peakCoefficients4 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq4, chainSettings.peakQuality4, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels4));
+    //auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq1, chainSettings.peakQuality1, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels1));
+    //auto peakCoefficients2 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq2, chainSettings.peakQuality2, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels2));
+    //auto peakCoefficients3 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq3, chainSettings.peakQuality3, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels3));
+    //auto peakCoefficients4 = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), chainSettings.peakFreq4, chainSettings.peakQuality4, juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels4));
 
+	auto peakCoefficientsVector = makePeakFilter(chainSettings, getSampleRate());
 
     //set filter coefficients for peak fileters
     //*leftChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
     //*rightChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
-	updateCoefficients(leftChain.get<ChainPositions::Peak1>().coefficients, peakCoefficients);
-	updateCoefficients(rightChain.get<ChainPositions::Peak1>().coefficients, peakCoefficients);
+	updateCoefficients(leftChain.get<ChainPositions::Peak1>().coefficients, peakCoefficientsVector[0]);
+	updateCoefficients(rightChain.get<ChainPositions::Peak1>().coefficients, peakCoefficientsVector[0]);
 
-    updateCoefficients(leftChain.get<ChainPositions::Peak2>().coefficients, peakCoefficients2);
-    updateCoefficients(rightChain.get<ChainPositions::Peak2>().coefficients, peakCoefficients2);
+    updateCoefficients(leftChain.get<ChainPositions::Peak2>().coefficients, peakCoefficientsVector[1]);
+    updateCoefficients(rightChain.get<ChainPositions::Peak2>().coefficients, peakCoefficientsVector[1]);
 
-    updateCoefficients(leftChain.get<ChainPositions::Peak3>().coefficients, peakCoefficients3);
-    updateCoefficients(rightChain.get<ChainPositions::Peak3>().coefficients, peakCoefficients3);
+    updateCoefficients(leftChain.get<ChainPositions::Peak3>().coefficients, peakCoefficientsVector[2]);
+    updateCoefficients(rightChain.get<ChainPositions::Peak3>().coefficients, peakCoefficientsVector[2]);
 
-    updateCoefficients(leftChain.get<ChainPositions::Peak4>().coefficients, peakCoefficients4);
-    updateCoefficients(rightChain.get<ChainPositions::Peak4>().coefficients, peakCoefficients4);
+    updateCoefficients(leftChain.get<ChainPositions::Peak4>().coefficients, peakCoefficientsVector[3]);
+    updateCoefficients(rightChain.get<ChainPositions::Peak4>().coefficients, peakCoefficientsVector[3]);
 
 
 
