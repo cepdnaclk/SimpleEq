@@ -69,23 +69,16 @@ void ResponseCurveComponent::paint(juce::Graphics& g)
 
 
 	using namespace juce;
-	// Fill background 
-	//20,29,36
-	//21,30,37
-	//48,48,48
-	//g.fillAll(Colour(20, 29, 36));
+
 
 	// Draw plugin title
 	g.setColour(juce::Colours::white);
 	g.setFont(15.0f);
 	g.drawText("EQ", getLocalBounds(), Justification::centredTop);
 
-	// Spectrum analyzer placeholder
-	
+	//drawing response curve
 	auto responseCurveArea = getLocalBounds();
 
-
-	//drawing response curve
 	auto w = responseCurveArea.getWidth();
 
 	auto& lowcut = monoChain.get<ChainPositions::LowCut>();
@@ -234,8 +227,6 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 	// Initialize response curve component
 	addAndMakeVisible(responseCurveComponent);
 
-	
-
 	// Set the size of the editor
 	setSize(800, 600);
 
@@ -273,9 +264,8 @@ void SimpleEqAudioProcessorEditor::resized()
     
 	auto bounds = getLocalBounds();
 
-	// Reserve space for the spectrum analyzer at the top
+	// Reserve space for the response curve at the top
 	auto responseCurveArea = bounds.removeFromTop(bounds.getHeight() / 2);
-	//responseCurvePlaceholder.setBounds(spectrumAnalyzerArea);
 	responseCurveComponent.setBounds(responseCurveArea);
 
 

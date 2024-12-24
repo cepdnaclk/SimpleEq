@@ -64,7 +64,7 @@ private:
     // access the processor object that created it.
     SimpleEqAudioProcessor& audioProcessor;
 
-	//juce::Atomic<bool> parametersChanged{ false };
+
 
     CustomRotarySlider lowCutFreqSlider,
         highCutFreqSlider,
@@ -87,10 +87,7 @@ private:
         band4FreqSliderAttachment, band4GainSliderAttachment, band4QualitySliderAttachment,
 		lowCutSlopeSliderAttachment, highCutSlopeSliderAttachment;
 
-    // GUI Components
-    // Spectrum Analyzer placeholder
-    //juce::Component responseCurvePlaceholder;
-	
+
     juce::TextButton bandButtons[6];  // Buttons for each band (1-6)
     //juce::Slider freqSlider;         // Frequency slider (used for all bands)
     //juce::Slider slopeSlider;        // Slope slider (for low/high cut)
@@ -109,8 +106,6 @@ private:
     //39,226,252
 	juce::Array<juce::Colour> bandColours{ juce::Colour(192,102,102), juce::Colour(154,89,181), juce::Colour(27,188,156),
         juce::Colour(53,152,219), juce::Colour(230,124,37), juce::Colour(196,80,128) };
-
-	//MonoChain monoChain;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEqAudioProcessorEditor)

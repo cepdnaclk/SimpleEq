@@ -3,6 +3,10 @@
 <JUCERPROJECT id="FcgGbP" name="SimpleEq" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="FcC5wz" name="SimpleEq">
+    <GROUP id="{A94B744F-F999-C22E-F719-FA6B9384642B}" name="LookAndFeel">
+      <FILE id="omasGJ" name="SliderLAF.cpp" compile="1" resource="0" file="Source/LookAndFeel/SliderLAF.cpp"/>
+      <FILE id="PLQZda" name="SliderLAF.h" compile="0" resource="0" file="Source/LookAndFeel/SliderLAF.h"/>
+    </GROUP>
     <GROUP id="{A62032A6-CBC5-B4D8-69D3-3FA89D3F0613}" name="Source">
       <FILE id="BchSf6" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
