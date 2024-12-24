@@ -9,6 +9,14 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+namespace BandColours
+{
+	const juce::Array<juce::Colour> bandColours{ juce::Colour(192,102,102), juce::Colour(154,89,181), juce::Colour(27,188,156),
+		juce::Colour(53,152,219), juce::Colour(230,124,37), juce::Colour(196,80,128) };
+
+}
+
+
 ResponseCurveComponent::ResponseCurveComponent(SimpleEqAudioProcessor& p) : audioProcessor(p)
 {
 	startTimerHz(60);
@@ -174,6 +182,12 @@ void ResponseCurveComponent::paint(juce::Graphics& g)
 //==============================================================================
 SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcessor& p)
 	: AudioProcessorEditor(&p), audioProcessor(p),
+	lowCutFreqSlider(BandColours::bandColours[0]), lowCutSlopeSlider(BandColours::bandColours[0]),
+	highCutFreqSlider(BandColours::bandColours[5]), highCutSlopeSlider(BandColours::bandColours[5]),
+	band1FreqSlider(BandColours::bandColours[1]), band1GainSlider(BandColours::bandColours[1]), band1QualitySlider(BandColours::bandColours[1]),
+	band2FreqSlider(BandColours::bandColours[2]), band2GainSlider(BandColours::bandColours[2]), band2QualitySlider(BandColours::bandColours[2]),
+	band3FreqSlider(BandColours::bandColours[3]), band3GainSlider(BandColours::bandColours[3]), band3QualitySlider(BandColours::bandColours[3]),
+	band4FreqSlider(BandColours::bandColours[4]), band4GainSlider(BandColours::bandColours[4]), band4QualitySlider(BandColours::bandColours[4]),
 	responseCurveComponent(audioProcessor),
 	lowCutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowCutFreqSlider),
 	lowCutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowCutSlopeSlider),
@@ -204,7 +218,7 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 	{
 		bandButtons[i].setButtonText(juce::String(i + 1));
 		bandButtons[i].setClickingTogglesState(false);
-		bandButtons[i].setColour(juce::TextButton::buttonColourId, bandColours[i]);
+		bandButtons[i].setColour(juce::TextButton::buttonColourId, BandColours::bandColours[i]);
 		//bandButtons[i].setColour(juce::TextButton::textColourOffId, juce::Colours::black);
 
 		// Use onClick for button handling

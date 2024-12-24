@@ -16,14 +16,19 @@
 /**
 */
 
+
+//extern juce::Array<juce::Colour> bandColours;
+
+
+
 struct CustomRotarySlider : juce::Slider
 {
-	CustomRotarySlider() : juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
+	CustomRotarySlider(juce::Colour bandColour) : juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag,
 		juce::Slider::TextEntryBoxPosition::TextBoxBelow)
 	{
         //setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
-        setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::green.brighter(1.0f));
-		setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colours::lightgreen.darker(0.7f));
+        setColour(juce::Slider::rotarySliderFillColourId, bandColour);
+		setColour(juce::Slider::rotarySliderOutlineColourId, bandColour.darker(0.7f));
 		setColour(juce::Slider::thumbColourId, juce::Colours::grey);
 		setLookAndFeel(&sliderLAF);
 	}
@@ -116,10 +121,7 @@ private:
 
     //53,152,219
     //39,226,252
-	juce::Array<juce::Colour> bandColours{ juce::Colour(192,102,102), juce::Colour(154,89,181), juce::Colour(27,188,156),
-        juce::Colour(53,152,219), juce::Colour(230,124,37), juce::Colour(196,80,128) };
-
-
+	
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEqAudioProcessorEditor)
