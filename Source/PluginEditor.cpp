@@ -347,6 +347,7 @@ void SimpleEqAudioProcessorEditor::initializeSlider(juce::Slider& slider)
 	//slider.setName(name);
 	slider.setVisible(false);  // Start with sliders hidden
 	addAndMakeVisible(slider);
+	
 }
 
 
