@@ -40,7 +40,7 @@ void SliderLAF::drawRotarySlider(Graphics& g, int x, int y, int width, int heigh
     auto bounds = Rectangle<int>(x, y, width, height).toFloat().reduced(10);
     auto radius = jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
     auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
-    auto lineW = jmin(4.0f, radius * 0.5f) * 1.1f;
+    auto lineW = jmin(4.0f, radius * 0.5f) * 1.5f;
     auto arcRadius = radius - lineW * 0.5f;
 
 	auto diameter = 2.0f * radius;
@@ -50,7 +50,8 @@ void SliderLAF::drawRotarySlider(Graphics& g, int x, int y, int width, int heigh
     float ry = centerY - radius;
 
     juce::Rectangle<float> dialArea(rx, ry, diameter, diameter);
-    g.setColour(slider.findColour(Slider::thumbColourId).withAlpha(0.7f)); //center
+    //g.setColour(slider.findColour(Slider::thumbColourId).withAlpha(0.7f)); //center
+	g.setColour(Colour(30, 43, 54));
     g.fillEllipse(dialArea);
 
     // Dial-path background
@@ -89,7 +90,7 @@ void SliderLAF::drawRotarySlider(Graphics& g, int x, int y, int width, int heigh
     Point<float> thumbPoint(bounds.getCentreX() + (arcRadius - lineW * 1.25) * std::cos(toAngle - MathConstants<float>::halfPi),
         bounds.getCentreY() + (arcRadius - lineW * 1.25) * std::sin(toAngle - MathConstants<float>::halfPi));
 
-    g.setColour(slider.findColour(Slider::thumbColourId));
+    g.setColour(slider.findColour(Slider::rotarySliderFillColourId));
     g.drawLine(backgroundArc.getBounds().getCentreX(), backgroundArc.getBounds().getCentreY(), thumbPoint.getX(), thumbPoint.getY(), lineW / 2.0);
 
 
