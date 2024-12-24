@@ -15,15 +15,14 @@
 //==============================================================================
 /*
 */
-class SliderLAF  : public juce::Component
+using namespace juce;
+class SliderLAF  : public juce::LookAndFeel_V4
 {
 public:
+
     SliderLAF();
-    ~SliderLAF() override;
 
-    void paint (juce::Graphics&) override;
-    void resized() override;
+    void drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
+		const float rotaryStartAngle, const float rotaryEndAngle, Slider& slider) override;
 
-private:
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SliderLAF)
 };
