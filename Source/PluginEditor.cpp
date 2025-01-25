@@ -25,6 +25,10 @@ ResponseCurveComponent::ResponseCurveComponent(SimpleEqAudioProcessor& p) : audi
 	{
 		param->addListener(this);
 	}
+
+	// Force an initial update of the response curve
+	parametersChanged.set(true);
+	timerCallback();
 }
 
 ResponseCurveComponent::~ResponseCurveComponent()
@@ -240,7 +244,8 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 
 	// Initialize response curve component
 	addAndMakeVisible(responseCurveComponent);
-
+	// Force the response curve to update with the current state
+	responseCurveComponent.repaint();
 	// Set the size of the editor
 	setSize(800, 600);
 
