@@ -171,10 +171,37 @@ void ResponseCurveComponent::paint(juce::Graphics& g)
 		responseCurve.lineTo(responseCurveArea.getX() + i, map(mags[i]));
 	}
 
-	g.setColour(Colours::black);
+	//response curve backgorund gradient
+	// Define the colors using an array
+	Array<Colour> colours{
+		Colour(17, 25, 31),  // #11191F (start color)
+		Colour(31, 49, 91),  // #1F315B (27% stop)
+		Colour(39, 62, 117)  // #31519B (80% stop)
+	};
+
+	// Define the gradient's start and end points for the response curve area
+	auto startPoint = Point<float>(responseCurveArea.getX(), responseCurveArea.getY());                // Top of the area
+	auto endPoint = Point<float>(responseCurveArea.getX(), responseCurveArea.getBottom());            // Bottom of the area
+
+	// Create a linear gradient with the defined colors
+	ColourGradient gradient(
+		colours[0], startPoint.x, startPoint.y,  // Start color at the top
+		colours[2], endPoint.x, endPoint.y, false // End color at the bottom
+	);
+	gradient.addColour(0.60f, colours[1]); // 27% stop (rgba(31,49,91,1))
+	gradient.addColour(0.94f, colours[2]); // 80% stop (rgba(49,81,155,1))
+
+	// Apply the gradient
+	g.setGradientFill(gradient);
 	g.fillRect(responseCurveArea);
-	g.setColour(Colours::white);
-	g.drawRect(responseCurveArea, 1);
+
+
+
+	/*g.setColour(Colours::black);
+	g.fillRect(responseCurveArea);*/
+
+	/*g.setColour(Colours::white);
+	g.drawRect(responseCurveArea, 1);*/
 
 	g.setColour(Colours::skyblue);
 	g.strokePath(responseCurve, PathStrokeType(2.0f));
@@ -222,7 +249,7 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 	{
 		bandButtons[i].setButtonText(juce::String(i + 1));
 		bandButtons[i].setClickingTogglesState(false);
-		bandButtons[i].setColour(juce::TextButton::buttonColourId, BandColours::bandColours[i]);
+		bandButtons[i].setColour(juce::TextButton::buttonColourId, BandColours::bandColours[i].darker(0.3F));
 		//bandButtons[i].setColour(juce::TextButton::textColourOffId, juce::Colours::black);
 
 		// Use onClick for button handling
@@ -244,8 +271,10 @@ SimpleEqAudioProcessorEditor::SimpleEqAudioProcessorEditor(SimpleEqAudioProcesso
 
 	// Initialize response curve component
 	addAndMakeVisible(responseCurveComponent);
+
 	// Force the response curve to update with the current state
 	responseCurveComponent.repaint();
+
 	// Set the size of the editor
 	setSize(800, 600);
 
@@ -268,12 +297,41 @@ void SimpleEqAudioProcessorEditor::paint (juce::Graphics& g)
 	//20,29,36
 	//21,30,37
 	//48,48,48
-	g.fillAll(Colour(20,29,36));
+	//g.fillAll(Colour(20,29,36));
+	
+	 // Define gradient colors using fromFloatRGBA
+	//Array<Colour> colours{
+	//	Colour::fromFloatRGBA(4.0f / 255.0f, 0.0f, 66.0f / 255.0f, 1.0f),    // rgba(4, 0, 66, 1)
+	//	Colour::fromFloatRGBA(29.0f / 255.0f, 29.0f / 255.0f, 117.0f / 255.0f, 1.0f), // rgba(29, 29, 117, 1)
+	//	Colour::fromFloatRGBA(75.0f / 255.0f, 3.0f / 255.0f, 177.0f / 255.0f, 1.0f)  // rgba(75, 3, 177, 1)
+	//};
 
-	// Draw plugin title
-	g.setColour(juce::Colours::white);
-	g.setFont(15.0f);
-	g.drawText("EQ", getLocalBounds(), Justification::centredTop);
+	Array<Colour> colours{
+	Colour(17, 25, 31), // #1d1d75
+	Colour(20, 29, 50), // #1d1d75 (repeated for gradient consistency)
+	Colour(17, 25, 31)  // #4b03b1
+	};
+
+	// Define the gradient's start and end points for a 45-degree angle
+	auto bounds = getLocalBounds().toFloat();
+	float width = bounds.getWidth();
+	float height = bounds.getHeight();
+
+	Point<float> startPoint(bounds.getX(), bounds.getY());                 // Top-left corner
+	Point<float> endPoint(bounds.getX() + width, bounds.getY() + height); // Bottom-right corner
+
+	// Create a linear gradient with the defined colours
+	ColourGradient gradient(
+		colours[0], startPoint.x, startPoint.y, // Start color at top-left
+		colours[2], endPoint.x, endPoint.y, false // End color at bottom-right
+	);
+	gradient.addColour(0.25f, colours[0]); // 25% stop
+	gradient.addColour(0.64f, colours[1]); // 64% stop
+	gradient.addColour(1.0f, colours[2]);  // 100% stop
+
+	// Apply the gradient
+	g.setGradientFill(gradient);
+	g.fillRect(getLocalBounds());
 
 	
 }
@@ -298,7 +356,7 @@ void SimpleEqAudioProcessorEditor::resized()
 	// Layout band buttons
 	int totalWidth = (buttonWidth * 6) + (buttonSpacing * 5);
 	int startX = (bounds.getWidth() - totalWidth) / 2;
-	int startY = responseCurveArea.getBottom() + 10;
+	int startY = responseCurveArea.getBottom() + 20;
 
 
 	for (int i = 0; i < 6; ++i)

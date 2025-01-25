@@ -96,68 +96,123 @@ SliderLAF::SliderLAF()
 //
 //}
 
+//void SliderLAF::drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
+//    const float rotaryStartAngle, const float rotaryEndAngle, Slider& slider)
+//{
+//    auto bounds = Rectangle<int>(x, y, width, height).toFloat().reduced(10);
+//    auto radius = jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+//    auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
+//    auto lineW = jmin(4.0f, radius * 0.5f) * 1.5f;
+//    auto arcRadius = radius - lineW * 0.5f;
+//
+//    // Draw background arc
+//    Path backgroundArc;
+//    backgroundArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
+//        arcRadius, arcRadius, 0.0f,
+//        rotaryStartAngle, rotaryEndAngle, true);
+//    g.setColour(slider.findColour(Slider::rotarySliderOutlineColourId));
+//    g.strokePath(backgroundArc, PathStrokeType(lineW));
+//
+//    // Draw value arc
+//    if (slider.isEnabled())
+//    {
+//        Path valueArc;
+//        valueArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
+//            arcRadius, arcRadius, 0.0f,
+//            rotaryStartAngle, toAngle, true);
+//        g.setColour(slider.findColour(Slider::rotarySliderFillColourId));
+//        g.strokePath(valueArc, PathStrokeType(lineW));
+//    }
+//
+//    // Adjust thumb to lie slightly inside the arc
+//    auto thumbRadius = arcRadius - lineW * 1.7f; // Thumb is now inside the arc
+//    Point<float> thumbTip(bounds.getCentreX() + thumbRadius * std::cos(toAngle - MathConstants<float>::halfPi),
+//        bounds.getCentreY() + thumbRadius * std::sin(toAngle - MathConstants<float>::halfPi));
+//
+//    // Debugging: Draw a circle at the thumbTip
+//    g.setColour(slider.findColour(Slider::rotarySliderFillColourId)); // Bright color for visibility
+//    g.fillEllipse(thumbTip.x - 7.0f, thumbTip.y - 7.0f, 12.0f, 12.0f); // Circle radius: 5px
+//
+//    // Triangle dimensions
+//    float triangleBase = 100.0f;  // Base width of the triangle
+//    float triangleHeight = 120.0f; // Height of the triangle
+//
+//    // Calculate triangle base points
+//    Point<float> basePoint1(thumbTip.x + triangleBase * 0.5f,//* std::cos(toAngle + MathConstants<float>::halfPi),
+//        thumbTip.y + triangleHeight * 0.5f);//* std::sin(toAngle + MathConstants<float>::halfPi));
+//    Point<float> basePoint2(thumbTip.x - triangleBase * 0.5f, //* std::cos(toAngle + MathConstants<float>::halfPi),
+//        thumbTip.y - triangleHeight * 0.5f);//* std::sin(toAngle + MathConstants<float>::halfPi));
+//
+//    // Debugging: Draw lines between triangle points
+// //   g.setColour(juce::Colours::green); // Bright color for visibility
+// //   g.drawLine(thumbTip.x, thumbTip.y, basePoint1.x, basePoint1.y, 2.0f); // Line from tip to basePoint1
+// //   g.setColour(juce::Colours::white);
+// //   g.drawLine(thumbTip.x, thumbTip.y, basePoint2.x, basePoint2.y, 2.0f); // Line from tip to basePoint2
+//	//g.setColour(juce::Colours::yellow);
+// //   g.drawLine(basePoint1.x, basePoint1.y, basePoint2.x, basePoint2.y, 2.0f); // Line connecting base points
+//
+//    // Draw the triangle
+//    Path triangle;
+//    triangle.addTriangle(thumbTip, basePoint1, basePoint2);
+//
+//    g.setColour(slider.findColour(Slider::rotarySliderFillColourId)); // Band color
+//    g.fillPath(triangle);
+//}
+
 void SliderLAF::drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
     const float rotaryStartAngle, const float rotaryEndAngle, Slider& slider)
 {
+    // Calculate bounds and radius
     auto bounds = Rectangle<int>(x, y, width, height).toFloat().reduced(10);
     auto radius = jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
     auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
     auto lineW = jmin(4.0f, radius * 0.5f) * 1.5f;
     auto arcRadius = radius - lineW * 0.5f;
 
-    // Draw background arc
+    // Circular gradient background confined to arc bounds
+    ColourGradient gradient(Colour(20, 29, 50), bounds.getCentreX(), bounds.getCentreY(),
+        Colour(17, 25, 31), bounds.getCentreX(), bounds.getCentreY() + arcRadius, true);
+    g.setGradientFill(gradient);
+    g.fillEllipse(bounds.reduced(lineW));
+
+    // Background arc
     Path backgroundArc;
     backgroundArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
         arcRadius, arcRadius, 0.0f,
         rotaryStartAngle, rotaryEndAngle, true);
-    g.setColour(slider.findColour(Slider::rotarySliderOutlineColourId));
-    g.strokePath(backgroundArc, PathStrokeType(lineW));
+    g.setColour(Colours::darkgrey);
+    g.strokePath(backgroundArc, PathStrokeType(lineW, PathStrokeType::curved, PathStrokeType::rounded));
 
-    // Draw value arc
+    // Value arc with glow
     if (slider.isEnabled())
     {
         Path valueArc;
         valueArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
             arcRadius, arcRadius, 0.0f,
             rotaryStartAngle, toAngle, true);
+
+        // Draw glow
+        g.setColour(slider.findColour(Slider::rotarySliderFillColourId).withAlpha(0.3f));
+        g.strokePath(valueArc, PathStrokeType(lineW * 1.5f, PathStrokeType::curved, PathStrokeType::rounded));
+
+        // Draw value arc
         g.setColour(slider.findColour(Slider::rotarySliderFillColourId));
-        g.strokePath(valueArc, PathStrokeType(lineW));
+        g.strokePath(valueArc, PathStrokeType(lineW, PathStrokeType::curved, PathStrokeType::rounded));
     }
 
-    // Adjust thumb to lie slightly inside the arc
-    auto thumbRadius = arcRadius - lineW * 1.7f; // Thumb is now inside the arc
-    Point<float> thumbTip(bounds.getCentreX() + thumbRadius * std::cos(toAngle - MathConstants<float>::halfPi),
-        bounds.getCentreY() + thumbRadius * std::sin(toAngle - MathConstants<float>::halfPi));
+    // Circular thumb
+    Point<float> thumbPoint(bounds.getCentreX() + (arcRadius - lineW * 1.5f) * std::cos(toAngle - MathConstants<float>::halfPi),
+        bounds.getCentreY() + (arcRadius - lineW * 1.5f) * std::sin(toAngle - MathConstants<float>::halfPi));
 
-    // Debugging: Draw a circle at the thumbTip
-    g.setColour(slider.findColour(Slider::rotarySliderFillColourId)); // Bright color for visibility
-    g.fillEllipse(thumbTip.x - 7.0f, thumbTip.y - 7.0f, 12.0f, 12.0f); // Circle radius: 5px
+    // Draw thumb
+    g.setColour(slider.findColour(Slider::rotarySliderFillColourId));
+    g.fillEllipse(thumbPoint.x - 6.0f, thumbPoint.y - 6.0f, 12.0f, 12.0f); // Thumb size
 
-    // Triangle dimensions
-    float triangleBase = 100.0f;  // Base width of the triangle
-    float triangleHeight = 120.0f; // Height of the triangle
-
-    // Calculate triangle base points
-    Point<float> basePoint1(thumbTip.x + triangleBase * 0.5f,//* std::cos(toAngle + MathConstants<float>::halfPi),
-        thumbTip.y + triangleHeight * 0.5f);//* std::sin(toAngle + MathConstants<float>::halfPi));
-    Point<float> basePoint2(thumbTip.x - triangleBase * 0.5f, //* std::cos(toAngle + MathConstants<float>::halfPi),
-        thumbTip.y - triangleHeight * 0.5f);//* std::sin(toAngle + MathConstants<float>::halfPi));
-
-    // Debugging: Draw lines between triangle points
- //   g.setColour(juce::Colours::green); // Bright color for visibility
- //   g.drawLine(thumbTip.x, thumbTip.y, basePoint1.x, basePoint1.y, 2.0f); // Line from tip to basePoint1
- //   g.setColour(juce::Colours::white);
- //   g.drawLine(thumbTip.x, thumbTip.y, basePoint2.x, basePoint2.y, 2.0f); // Line from tip to basePoint2
-	//g.setColour(juce::Colours::yellow);
- //   g.drawLine(basePoint1.x, basePoint1.y, basePoint2.x, basePoint2.y, 2.0f); // Line connecting base points
-
-    // Draw the triangle
-    Path triangle;
-    triangle.addTriangle(thumbTip, basePoint1, basePoint2);
-
-    g.setColour(slider.findColour(Slider::rotarySliderFillColourId)); // Band color
-    g.fillPath(triangle);
+    g.setColour(Colours::black.withAlpha(0.2f));
+    g.drawEllipse(thumbPoint.x - 6.0f, thumbPoint.y - 6.0f, 12.0f, 12.0f, 1.5f);
 }
+
+
 
 
 
